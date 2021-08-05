@@ -1,12 +1,22 @@
 Package: scoretools
 Type: Package
-Title: Tools to develop risk scorecards
+Title: Tools to aid the development of scorecards
 Version: 0.1.0
 Author: Riddhiman Roy
 Maintainer: The package maintainer <riddhiman.roy@gmail.com>
-Description: The package provides a bunch of convenience wrappers to aid the development 
-    of risk scorecards. 
+Description: The package provides a set of convenience wrappers to aid in the development 
+    of credit risk scorecards.
 License: MIT
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
+Depends: 
+    R (>= 4.0),
+    dplyr,
+    huxtable,
+    ggplot2,
+    ROCR,
+    hrbrthemes
+Suggests:
+    xgboost
+    
