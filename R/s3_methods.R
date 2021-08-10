@@ -3,6 +3,8 @@
 
 print.ks <- function(tab){
 
+  tab <- prettify_ks_table(tab)
+
   max_ks <- attr(tab, "max_ks")
   bin <- attr(tab, "decile")
 
@@ -10,11 +12,11 @@ print.ks <- function(tab){
 
   tab %>%
     mutate(S.No = row_number()) %>%
-    select(S.No, Bins, Total, Events, Pop_Pct, Event.Rate, KS,
+    select(S.No, Bins, Total, Events, Pop.Pct, Event.Rate, KS,
            Capture.Rate, Cum.Event.Rate) %>%
     rename("Total\n(#)" = Total,
            "Events\n(#)" = Events,
-           "Pop\n(%)" = "Pop_Pct",
+           "Pop\n(%)" = "Pop.Pct",
            "Event Rate\n(%)" = Event.Rate,
            "Cum. Event Rate\n(%)" = "Cum.Event.Rate",
            "Capture Rate\n(%)" = "Capture.Rate") %>%

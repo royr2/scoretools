@@ -16,7 +16,8 @@ Depends:
     huxtable,
     ggplot2,
     ROCR,
-    hrbrthemes
+    hrbrthemes,
+    plotly
 Suggests:
     xgboost
     

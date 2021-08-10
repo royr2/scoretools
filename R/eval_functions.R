@@ -82,7 +82,7 @@ gains_table <- function(act, pred, nBins = 10, prettify = T, type = "goods"){
     {if(type == "goods") arrange(., Bins) else .} %>%
     {if(type == "bads") arrange(., desc(Bins)) else .} %>%
 
-    mutate(Pop_Pct = Total / sum(Total),
+    mutate(Pop.Pct = Total / sum(Total),
            Cum.Events = cumsum(Events),
            Cum.N.Events = cumsum(N.Events),
            Cum.Events.Dist = Cum.Events / sum(Events),
@@ -91,7 +91,7 @@ gains_table <- function(act, pred, nBins = 10, prettify = T, type = "goods"){
            Capture.Rate = Cum.Events / sum(Events),
            Cum.Event.Rate = (sum(Events) - cumsum(Events))/(sum(Total) - cumsum(Total))) %>%
 
-    select(Bins, Total, Pop_Pct, Events, N.Events, Event.Rate, Cum.Events, Cum.N.Events,
+    select(Bins, Total, Pop.Pct, Events, N.Events, Event.Rate, Cum.Events, Cum.N.Events,
            Cum.Events.Dist, Cum.N.Events.Dist, KS, Capture.Rate, Cum.Event.Rate)
 
   # Get AUROC
@@ -109,7 +109,6 @@ gains_table <- function(act, pred, nBins = 10, prettify = T, type = "goods"){
   # Prettify table if required
   # This also sets a different class with its own print method
   if(prettify == T){
-    tab <- prettify_ks_table(tab)
     class(tab) <- c("ks", "data.frame")
   }
 
@@ -171,9 +170,7 @@ diag_charts <- function(act, pred, nBins = 10, type = "goods", font_size = 14){
 
   p3 <- ks_chart(act, pred, font_size = font_size)
 
-  p4 <- precision_recall_chart(act, pred)
-
-
+  p4 <- accuracy_recall_chart(act, pred)
 
   gridExtra::grid.arrange(p1, p2, p3, p4)
 
