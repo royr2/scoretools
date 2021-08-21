@@ -18,7 +18,7 @@ gains_table(act, pred, nBins = 10, prettify = T, type = "goods")
 \item{type}{A string specifying if event = goods or bads. Output will be inverted accordingly.}
 }
 \value{
-A tibble if \code{prettify = T} else an object of type \code{ks}
+A tibble if \code{prettify = F} else an object of type \code{ks}
 }
 \description{
 Function generates a gains table that is typically used to assess the performance of scorecards.
@@ -42,7 +42,7 @@ also computes the AUROC and the Gini coefficient as \code{2*AUROC - 1}.
 }
 \examples{
 data("accepted_base")
-accepted_base <- na.omit(accepted_base)
+accepted_base[is.na(accepted_base)] <- -999
 
 with(accepted_base, {
  bad_flag <- ifelse(loan_status == "Charged Off", 1, 0)

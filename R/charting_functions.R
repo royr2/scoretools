@@ -31,52 +31,25 @@ gains_chart <- function(obj, font_size = 14){
   ipsum_theme(p, font_size)
 }
 
-
-precision_chart <- function(act, pred){
-  cutoffs <- seq(min(pred), max(pred), length.out = 1000)
-  y <- sapply(cutoffs, function(x){precision(act, pred, x)})
-
-  plot(cutoffs, y, type = 'l')
-}
-
-recall_chart <- function(act, pred){
-  cutoffs <- seq(min(pred), max(pred), length.out = 1000)
-  y <- sapply(cutoffs, function(x){recall(act, pred, x)})
-
-  plot(cutoffs, y, type = 'l')
-}
-
-precision_recall_chart <- function(act, pred, base_size = 10){
-  cutoffs <- seq(min(pred), max(pred), length.out = 1000)
-
-  prec <- sapply(cutoffs, function(x){precision(act, pred, x)})
-  rec <- sapply(cutoffs, function(x){recall(act, pred, x)})
-
-  plot(cutoffs, prec, type = 'l', ylim = c(0, 1))
-  lines(cutoffs, rec, type = 'l')
-}
-
 roc_chart <- function(act, pred, font_size = 14){
 
-  cutoffs <- seq(min(pred), max(pred), length.out = 1000)
+  cutoffs <- seq(min(pred), max(pred), length.out = 100)
   y <- sapply(cutoffs, function(x){tpr(act, pred, x)})
   x <- sapply(cutoffs, function(x){fpr(act, pred, x)})
   area <- ROCR::performance(ROCR::prediction(pred, act),"auc")@y.values[[1]]
 
-  y_coord <- max(y[near(x, 0.5, tol = 0.01)])
-
   p <- data.frame(c = round(cutoffs, 3), x = x, y = y) %>%
-    mutate(c = ifelse(row_number() %% 100 == 0, c, "")) %>%
+    mutate(c = ifelse(row_number() %% 10 == 0, c, "")) %>%
 
     ggplot(aes(x = x)) +
-    geom_line(aes(y = y, color = "Model"), size = 1.2) +
-    geom_line(aes(y = x, color = "Random"), size = 1.2, linetype = 2) +
+    geom_line(aes(y = y, color = "Model"), size = 1.5) +
+    geom_line(aes(y = x, color = "Random"), size = 1.5, linetype = 2) +
 
     geom_text(aes(y = y, label = c), position = position_nudge(x = 0, y = 0.05)) +
 
     labs(title = "ROC Curve",
          subtitle = paste("AUROC:", round(area, 3)),
-         caption = "Solid line should be above the dotted line. If below, event definition might be inverted",
+         caption = "Solid line should be above the dotted line",
          x = "False Positive Rate (1 - Specificity)",
          y = "True Positive Rate (Sensitivity)") +
 
@@ -86,21 +59,19 @@ roc_chart <- function(act, pred, font_size = 14){
 }
 
 ks_chart <- function(act, pred, font_size = 14){
-  cutoffs <- seq(min(pred), max(pred), length.out = 1000)
+  cutoffs <- seq(min(pred), max(pred), length.out = 100)
   y <- sapply(cutoffs, function(x){tpr(act, pred, x)})
   x <- sapply(cutoffs, function(x){fpr(act, pred, x)})
   max_ks <- round(max(abs(y - x)), 3)
   max_c <- cutoffs[which.max(abs(y - x))]
 
 
-  colors <- c("TPR" = "#3fbf5f", "FPR" = "#d65867")
-
   p <- data.frame(x = x, y = y, c = cutoffs) %>%
 
     ggplot(aes(x = c)) +
 
-    geom_line(aes(y = y), linetype = 1, size = 1.2) +
-    geom_line(aes(y = x), linetype = 1, size = 1.2) +
+    geom_line(aes(y = y, color = "TPR"), size = 1.5) +
+    geom_line(aes(y = x, color = "FPR"), size = 1.5) +
 
     geom_vline(xintercept = max_c, linetype = 2, size = 1) +
 
@@ -109,13 +80,15 @@ ks_chart <- function(act, pred, font_size = 14){
          caption = "The maximum difference beetween the TPR and the FPR curves is reported as the value of the KS statistic",
          x = "Cutoff",
          y = "TPR + FPR") +
-    scale_color_manual(values = colors)
+
+    scale_color_manual(values = c("FPR" = "#D72323", "TPR" = "#297F87"))
 
   ipsum_theme(p, font_size)
 }
 
 accuracy_recall_chart <- function(act, pred, font_size = 14){
-  cutoffs <- seq(min(pred), max(pred), length.out = 1000)
+
+  cutoffs <- seq(min(pred), max(pred), length.out = 100)
   y1 <- sapply(cutoffs, function(x){accuracy(act, pred, x)})
   y2 <- sapply(cutoffs, function(x){recall(act, pred, x)})
 
@@ -133,18 +106,99 @@ accuracy_recall_chart <- function(act, pred, font_size = 14){
 
     ggplot(aes(x = x)) +
 
-    geom_line(aes(y = acc), size = 1.2, color = "#393E46", alpha = 0.8) +
-    geom_line(aes(y = rec), size = 1.2, color = "#393E46", alpha = 0.8) +
-
-    geom_text(aes(x = acc_x, y = acc_y, label = "Accuracy"), nudge_y = 0.1) +
-    geom_text(aes(x = rec_x, y = rec_y, label = "Recall"), nudge_y = 0.1) +
+    geom_line(aes(y = acc, color = "Accuracy"), size = 1.5) +
+    geom_line(aes(y = rec, color = "Recall"), size = 1.5) +
 
     labs(title = "Accuracy vs Recall",
-         subtitle = paste0("Minimum abs. diff at (Cutoff:", min_c, ")"),
-         caption = "The minimum absolute difference between accuracy and recall curves is reported",
          x = "Cutoff",
-         y = "Accuracy + Recall")
+         y = "Accuracy + Recall") +
+    scale_color_manual(values = c("Accuracy" = "#297F87", "Recall" = "#D72323"))
 
   ipsum_theme(p, font_size)
 }
 
+precision_recall_chart <- function(act, pred, font_size = 14){
+  cutoffs <- seq(min(pred), max(pred), length.out = 100)
+
+  prec <- sapply(cutoffs, function(x){precision(act, pred, x)})
+  rec <- sapply(cutoffs, function(x){recall(act, pred, x)})
+
+  p <- data.frame(x = cutoffs, prec = prec, rec = rec) %>%
+
+    ggplot(aes(x = x)) +
+
+    geom_line(aes(y = prec, color = "Precision"), size = 1.5) +
+    geom_line(aes(y = rec, color = "Recall"), size = 1.5) +
+
+    labs(title = "Precision vs Recall",
+         x = "Cutoff",
+         y = "Precision + Recall") +
+
+    scale_color_manual(values = c("Precision" = "#297F87", "Recall" = "#D72323"))
+
+  ipsum_theme(p, font_size)
+}
+
+accuracy_precision_chart <- function(act, pred, font_size = 14){
+  cutoffs <- seq(min(pred), max(pred), length.out = 100)
+
+  prec <- sapply(cutoffs, function(x){precision(act, pred, x)})
+  acc <- sapply(cutoffs, function(x){accuracy(act, pred, x)})
+
+  p <- data.frame(x = cutoffs, prec = prec, acc = acc) %>%
+
+    ggplot(aes(x = x)) +
+
+    geom_line(aes(y = prec, color = "Precision"), size = 1.5) +
+    geom_line(aes(y = acc, color = "Accuracy"), size = 1.5) +
+
+    labs(title = "Accuracy vs Precision",
+         x = "Cutoff",
+         y = "Accuracy + Precision") +
+
+    scale_color_manual(values = c("Accuracy" = "#297F87", "Precision" = "#D72323"))
+
+  ipsum_theme(p, font_size)
+}
+
+sensitivity_specificity_chart <- function(act, pred, font_size = 14){
+  cutoffs <- seq(min(pred), max(pred), length.out = 100)
+
+  sens <- sapply(cutoffs, function(x){sensitivity(act, pred, x)})
+  spec <- sapply(cutoffs, function(x){specificity(act, pred, x)})
+
+  p <- data.frame(x = cutoffs, sens = sens, spec = spec) %>%
+
+    ggplot(aes(x = x)) +
+
+    geom_line(aes(y = sens, color = "Sensitivity"), size = 1.5) +
+    geom_line(aes(y = spec, color = "Specificity"), size = 1.5) +
+
+    labs(title = "Sensitivity vs Specificity",
+         x = "Cutoff",
+         y = "Sensitivity + Specificity") +
+
+    scale_color_manual(values = c("Sensitivity" = "#297F87", "Specificity" = "#D72323"))
+
+  ipsum_theme(p, font_size)
+}
+
+f1_score_chart <- function(act, pred, font_size = 14){
+  cutoffs <- seq(min(pred), max(pred), length.out = 100)
+
+  f1 <- sapply(cutoffs, function(x){f1_score(act, pred, x)})
+
+  p <- data.frame(x = cutoffs, f1 = f1) %>%
+
+    ggplot(aes(x = x)) +
+
+    geom_line(aes(y = f1, color = "F1 Score"), size = 1.5) +
+
+    labs(title = "F1 Score",
+         x = "Cutoff",
+         y = "F1 Score") +
+
+    scale_color_manual(values = c("F1 Score" = "#297F87"))
+
+  ipsum_theme(p, font_size)
+}

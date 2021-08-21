@@ -35,13 +35,13 @@
 #' A string specifying if event = goods or bads. Output will be inverted accordingly.
 #'
 #' @return
-#' A tibble if \code{prettify = T} else an object of type \code{ks}
+#' A tibble if \code{prettify = F} else an object of type \code{ks}
 #'
 #' @export gains_table
 #'
 #' @examples
 #' data("accepted_base")
-#' accepted_base <- na.omit(accepted_base)
+#' accepted_base[is.na(accepted_base)] <- -999
 #'
 #'with(accepted_base, {
 #'  bad_flag <- ifelse(loan_status == "Charged Off", 1, 0)
@@ -118,15 +118,7 @@ gains_table <- function(act, pred, nBins = 10, prettify = T, type = "goods"){
 #' Generate a diagnostic plot
 #'
 #' @description
-#' Function generates a set of diagnostic plots to help evaluate the performance of a predictive model. The following four
-#' charts are shown:
-#'
-#'\enumerate{
-#' \item Gains chart
-#' \item ROC Curve
-#' \item Capture rates
-#' \item KS Chart
-#' }
+#' Function generates a set of diagnostic plots to help evaluate the performance of a predictive model.
 #'
 #' @details
 #'
@@ -136,41 +128,29 @@ gains_table <- function(act, pred, nBins = 10, prettify = T, type = "goods"){
 #' @param pred
 #' A numeric vector of predictions (probabilities/log-odds/scores)
 #'
-#' @param nBins
-#' An integer specifying the number of bins to use (10 = deciles, 20 = semi deciles etc)
-#' @param prettify
-#' A boolean specifying if the function should return a pretty table (huxtable will be used)
-#'
-#' @param type
-#' A string specifying if event = goods or bads. Output will be inverted accordingly.
-#'
-#' @return
-#' A tibble if \code{prettify = T} else an object of type \code{ks}
+#' @param font_size
+#' A number specifying the general font size to be used in all the charts
 #'
 #' @export diag_charts
 #'
 #' @examples
 #' data("accepted_base")
-#' accepted_base <- na.omit(accepted_base)
+#' accepted_base[is.na(accepted_base)] <- -999
 #'
-#'tab <- with(accepted_base, {
-#'  bad_flag <- ifelse(loan_status == "Charged Off", 1, 0)
-#'  mdl <- glm(factor(bad_flag) ~ revol_util + last_pymnt_amnt,
-#'             family = "binomial")
-#'  gains_table(bad_flag, predict(mdl), nBins = 10, type = "bads")
+#' with(accepted_base, {
+#' bad_flag <- ifelse(loan_status == "Charged Off", 1, 0)
+#' mdl <- glm(factor(bad_flag) ~ revol_util + last_pymnt_amnt,
+#'           family = "binomial")
+#' diag_charts(bad_flag, predict(mdl, type = "response"))
 #'})
-#'gains_chart(tab)
-diag_charts <- function(act, pred, nBins = 10, type = "goods", font_size = 14){
 
-  tab <- gains_table(act, pred, nBins = nBins, type = type)
 
-  p1 <- gains_chart(tab, font_size = font_size)
+diag_charts <- function(act, pred, font_size = 14){
 
-  p2 <- roc_chart(act, pred, font_size = font_size)
-
-  p3 <- ks_chart(act, pred, font_size = font_size)
-
-  p4 <- accuracy_recall_chart(act, pred)
+  p1 <- ks_chart(act, pred, font_size = font_size)
+  p2 <- precision_recall_chart(act, pred, font_size = font_size)
+  p3 <- sensitivity_specificity_chart(act, pred, font_size = font_size)
+  p4 <- f1_score_chart(act, pred, font_size = font_size)
 
   gridExtra::grid.arrange(p1, p2, p3, p4)
 

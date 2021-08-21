@@ -70,3 +70,28 @@ recall <- function(act, pred, cutoff){
   tp/(tp + fn)
 }
 
+sensitivity <- function(act, pred, cutoff){
+  pred_right <- as.numeric(pred >= cutoff)
+  tp <- sum(act * pred_right)
+  fn <- sum(act * (1 - pred_right))
+
+  tp/(tp + fn)
+}
+
+specificity <- function(act, pred, cutoff){
+  pred_right <- as.numeric(pred >= cutoff)
+  tn <- sum((1 - act) * (1 - pred_right))
+  fp <- sum((1 - act) * pred_right)
+
+  tn/(tn + fp)
+}
+
+f1_score <- function(act, pred, cutoff){
+  pred_right <- as.numeric(pred >= cutoff)
+
+  rec <- recall(act, pred, cutoff)
+  prec <- precision(act, pred, cutoff)
+
+  2 * (prec * rec)/(prec + rec)
+}
+
