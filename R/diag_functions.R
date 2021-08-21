@@ -115,7 +115,7 @@ gains_table <- function(act, pred, nBins = 10, prettify = T, type = "goods"){
   return(tab)
 }
 
-#' Generate a diagnistic plot
+#' Generate a diagnostic plot
 #'
 #' @description
 #' Function generates a set of diagnostic plots to help evaluate the performance of a predictive model. The following four

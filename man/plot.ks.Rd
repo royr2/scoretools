@@ -4,7 +4,7 @@
 \alias{plot.ks}
 \title{Plot method for class 'ks'}
 \usage{
-\method{plot}{ks}(obj, font_size = 12)
+\method{plot}{ks}(obj, font_size = 14)
 }
 \description{
 Plot method for class 'ks'

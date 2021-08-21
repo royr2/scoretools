@@ -1,3 +1,37 @@
+gains_chart <- function(obj, font_size = 14){
+
+  df <- attr(obj, "data")
+  fact <- max(df$Pop.Pct) / max(df$Event.Rate)
+
+
+  p <- df %>%
+    mutate(x = row_number()) %>%
+    ggplot(., aes(x = x)) +
+    geom_col(aes(y = Pop.Pct, fill = "Population%"), color = "black") +
+    geom_line(aes(y = Event.Rate * fact, color = "Event Rate"), size = 1.5) +
+    geom_point(aes(y = Event.Rate * fact), shape = 21, size = 3, color = "black", fill = "#E1E5EA") +
+    geom_text(aes(y = Event.Rate * fact, label = scales::percent(Event.Rate)),
+              position = position_nudge(x = 0.005, y = 0.005),
+              color = "black") +
+    scale_y_continuous(labels = scales::percent,
+                       sec.axis = sec_axis(~ . / fact,
+                                           name="Event Rate",
+                                           labels = scales::percent)) +
+    scale_x_continuous(breaks = 1:nrow(df), labels = as.character(df$Bins)) +
+
+    labs(title = "Gains Chart",
+         subtitle = "Population distribution and event rate trend",
+         caption = "Pop. dist. should be consistent and event rate trend should be monotonic",
+         x = "Bins",
+         y = "Population Distribution") +
+
+    scale_color_manual(values = c("Event Rate" = "#D72323")) +
+    scale_fill_manual(values = c("Population%" = "#EDEDED"))
+
+  ipsum_theme(p, font_size)
+}
+
+
 precision_chart <- function(act, pred){
   cutoffs <- seq(min(pred), max(pred), length.out = 1000)
   y <- sapply(cutoffs, function(x){precision(act, pred, x)})
@@ -22,45 +56,6 @@ precision_recall_chart <- function(act, pred, base_size = 10){
   lines(cutoffs, rec, type = 'l')
 }
 
-gains_chart <- function(obj, font_size = 14){
-
-  df <- attr(obj, "data")
-  # max_ks <- attr(obj, "max_ks")
-  # auroc <- attr(obj, "roc")
-  # gini <- attr(tab, "gini")
-
-  # if(max(df$Pop_Pct) > df$Event.Rate){
-  #   fact = 1/(max(df$Pop_Pct)/max(df$Event.Rate)) / 1.2
-  # }else{
-  #   fact = max(df$Pop_Pct)/max(df$Event.Rate) / 1.2
-  # }
-
-  fact <- max(df$Pop_Pct) / max(df$Event.Rate)
-
-
-  p <- df %>%
-    mutate(x = row_number()) %>%
-    ggplot(., aes(x = x)) +
-    geom_col(aes(y = Pop_Pct), fill = "#E1E5EA", color = "black") +
-    geom_line(aes(y = Event.Rate * fact), size = 2, color = "#393E46", alpha = 0.8) +
-    geom_point(aes(y = Event.Rate * fact), shape = 21, size = 3, color = "black", fill = "#E1E5EA") +
-    geom_text(aes(y = Event.Rate * fact, label = scales::percent(Event.Rate)),
-              position = position_nudge(x = 0.005, y = 0.005),
-              color = "black") +
-    scale_y_continuous(labels = scales::percent,
-                       sec.axis = sec_axis(~ . / fact,
-                                           name="Event Rate",
-                                           labels = scales::percent)) +
-    scale_x_continuous(breaks = 1:nrow(df), labels = as.character(df$Bins)) +
-
-    labs(title = "Gains Chart",
-         subtitle = "Population distribution and event rate trend",
-         caption = "Pop. dist. should be consistent and event rate trend should be monotonic",
-         x = "Bins",
-         y = "Population Distribution")
-  ipsum_theme(p, font_size)
-}
-
 roc_chart <- function(act, pred, font_size = 14){
 
   cutoffs <- seq(min(pred), max(pred), length.out = 1000)
@@ -74,18 +69,18 @@ roc_chart <- function(act, pred, font_size = 14){
     mutate(c = ifelse(row_number() %% 100 == 0, c, "")) %>%
 
     ggplot(aes(x = x)) +
-    geom_line(aes(y = y), size = 1.2, color = "#393E46", alpha = 0.8) +
-    geom_line(aes(y = x), size = 1.2, color = "#393E46", alpha = 0.8, linetype = 2) +
+    geom_line(aes(y = y, color = "Model"), size = 1.2) +
+    geom_line(aes(y = x, color = "Random"), size = 1.2, linetype = 2) +
 
-    geom_text(aes(x = 0.55, y = 0.5, label = "Random Model")) +
-    geom_text(aes(x = 0.5, y = y_coord, label = "Actual Model")) +
-    geom_text(aes(y = y, label = c)) +
+    geom_text(aes(y = y, label = c), position = position_nudge(x = 0, y = 0.05)) +
 
     labs(title = "ROC Curve",
-         subtitle = paste("Area:", round(area, 3)),
+         subtitle = paste("AUROC:", round(area, 3)),
          caption = "Solid line should be above the dotted line. If below, event definition might be inverted",
          x = "False Positive Rate (1 - Specificity)",
-         y = "True Positive Rate (Sensitivity)")
+         y = "True Positive Rate (Sensitivity)") +
+
+    scale_color_manual(values = c("Model" = "#D72323", "Random" = "black"))
 
   ipsum_theme(p, font_size)
 }

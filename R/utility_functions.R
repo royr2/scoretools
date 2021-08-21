@@ -12,11 +12,11 @@ prettify_ks_table <- function(tab, accr = 0.01){
 }
 
 # Function to print something to screen whita white background utilising the full console width
-# print_bg <- function(msg = "", collap = " "){
-#   c_width <- cli::console_width()
-#   msg <- paste("\n", msg, paste0(rep("", c_width - nchar(msg)), collapse = collap), "\n\n")
-#   cat(crayon::bgWhite(crayon::black(crayon::bold(msg))))
-# }
+print_bg <- function(msg = "", collap = " "){
+  c_width <- cli::console_width()
+  msg <- paste("\n", msg, paste0(rep("", c_width - nchar(msg)), collapse = collap), "\n\n")
+  cat(crayon::bgWhite(crayon::black(crayon::bold(msg))))
+}
 
 ROC <- function(act, pred){
   pred = ROCR::prediction(pred, act)
@@ -32,7 +32,7 @@ ipsum_theme <- function(p, font_size = 14){
                 axis_text_size = font_size * 0.6,
                 caption_size = font_size * 0.7,
                 plot_margin = unit(c(0.2,0.2,0.2,0.2), "cm")) +
-    theme(legend.position = "top-right")
+    theme(title = element_blank(), legend.position = "top")
 }
 
 tpr <- function(act, pred, cutoff){
