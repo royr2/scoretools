@@ -55,10 +55,8 @@ gains_table <- function(act, pred, nBins = 10, prettify = T, type = "goods"){
   q <- quantile(pred, probs = seq(0, 1, length.out = nBins + 1))
   q <- unique(q)
 
-  # Error if non binary target
-  if(length(unique(act)) > 2){
-    stop("Only binary classification problems are supported.")
-  }
+  # Check if binary or not
+  check_if_binary(act)
 
   # Warn if quantiles are not unique
   if(length(q) < nBins){
@@ -143,8 +141,6 @@ gains_table <- function(act, pred, nBins = 10, prettify = T, type = "goods"){
 #'           family = "binomial")
 #' diag_charts(bad_flag, predict(mdl, type = "response"))
 #'})
-
-
 diag_charts <- function(act, pred, font_size = 14){
 
   p1 <- ks_chart(act, pred, font_size = font_size)

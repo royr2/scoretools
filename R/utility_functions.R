@@ -1,4 +1,7 @@
-# Function to make KS tables pretty
+#
+# Bunch of utility functions
+#
+
 prettify_ks_table <- function(tab, accr = 0.01){
   tab$Pop.Pct <- scales::percent(tab$Pop.Pct, accuracy = accr)
   tab$Event.Rate <- scales::percent(tab$Event.Rate, accuracy = accr)
@@ -13,14 +16,12 @@ prettify_ks_table <- function(tab, accr = 0.01){
 
 # Function to print something to screen whita white background utilising the full console width
 print_bg <- function(msg = "", collap = " "){
-  c_width <- cli::console_width()
   msg <- paste("\n", msg, paste0(rep("", c_width - nchar(msg)), collapse = collap), "\n\n")
   cat(crayon::bgWhite(crayon::black(crayon::bold(msg))))
 }
 
 ROC <- function(act, pred){
-  pred = ROCR::prediction(pred, act)
-  # perf = ROCR::performance(pred,"tpr","fpr")
+  pred <- ROCR::prediction(pred, act)
   return(ROCR::performance(pred,"auc")@y.values[[1]])
 }
 
@@ -95,3 +96,58 @@ f1_score <- function(act, pred, cutoff){
   2 * (prec * rec)/(prec + rec)
 }
 
+cum_bad_rate <- function(act, pred, cutoff, bad = 0){
+  df <- data.frame(act, pred, cutoff)
+  df %>%
+    arrange(desc(pred)) %>%
+    mutate(check = pred >= cutoff) %>%
+    filter(check == TRUE) %>%
+    summarise(event_rate = sum(act == bad)/n(),
+              pop_rate = n()/nrow(df))
+}
+
+ capture_rate <- function(act, pred, cutoff, bad = 0){
+  df <- data.frame(act, pred, cutoff)
+  total_bads <- sum(df$act == bad)
+
+  df %>%
+    arrange(desc(pred)) %>%
+    mutate(check = pred <= cutoff) %>%
+    filter(check == TRUE) %>%
+    summarise(capture_rate = sum(act == bad)/total_bads)
+}
+
+
+check_if_binary <- function(vec){
+  if(sum(unique(vec) %in% c(0, 1)) != 2)
+    cli_abort("Only binary outcomes (0/1) are supported!")
+}
+
+IV <- function(act, var, method = "quantile", nBins = 10){
+
+  # Check if binary
+  check_if_binary(act)
+
+  # Bin as per chosen method
+  if(method == "quantile"){
+    qtile <- unique(quantile(var, probs = seq(0, 1, length.out = nBins, type = 3)))
+
+    # Warn if quantiling didn't work as expected
+    if(length(qtile) != nBins) cli_warn("Quantiles are not unique!")
+
+    bins <- cut(var, breaks = qtile, include.lowest = T, right = T, ordered_result = T)
+
+    dt <- data.table(bins, act)
+    dt <- dt[,.(.N), by = .(bins, act)]
+    dt <- dcast(data = dt, formula = bins ~ act, value.var = "N")
+
+    dt <- dt[order(bins), a := cumsum(`0`) / sum(`0`)]
+    dt <- dt[,b := cumsum(`1`) / sum(`1`)]
+
+    dt[,iv := (a-b)*(log(a/b))]
+    print(dt)
+    sum(dt$iv)
+
+  }
+
+}

@@ -2,5 +2,8 @@
 
 S3method(plot,ks)
 S3method(print,ks)
+export(cum_event_rate_chart)
 export(diag_charts)
 export(gains_table)
+export(linear_scale)
+export(roc_chart)
